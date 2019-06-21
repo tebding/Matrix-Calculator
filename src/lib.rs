@@ -174,16 +174,16 @@ pub fn evaluate() -> Result<Vec<f32>, String> {
                 setup_unary_op(&mut matrix);
             }
             
-            let mut res =  Vec<f32>::with_capacity(MATRIX_SIZE);
+            let mut resM = Vec<f32>::with_capacity(MATRIX_SIZE);
             match op {
-                Operations::Add => matrix_add(&matrix, &matrix2, &mut res),
-                Operations::Multiply => matrix_multiply(&matrix, &matrix2, &mut res),
-                Operations::ScalarAdd => matrix_scalar_add(&matrix, scalar, &mut res),
-                Operations::ScalarMultiply => matrix_scalar_multiply(&matrix, scalar, &mut res),
+                Operations::Add => matrix_add(&matrix, &matrix2, &mut resM),
+                Operations::Multiply => matrix_multiply(&matrix, &matrix2, &mut resM),
+                Operations::ScalarAdd => matrix_scalar_add(&matrix, scalar, &mut resM),
+                Operations::ScalarMultiply => matrix_scalar_multiply(&matrix, scalar, &mut resM),
                 Operations::Determinate => matrix_determinate(&matrix),
-                Operations::Trace => matrix_trace(&matrix),
-                Operations::Transpose => matrix_transpose(&matrix),
-                Operations::Inverse => matrix_inverse(&matrix),
+                Operations::Trace => matrix_trace(&matrix, &mut resV),
+                Operations::Transpose => matrix_transpose(&matrix, &mut resM),
+                Operations::Inverse => matrix_inverse(&matrix, &mut resM),
                 Operations::Adjugate => matrix_adjugate(&matrix),
                 _ => eprintln!("invalid operation somehow made it to fn selection"),
         },
@@ -212,7 +212,7 @@ fn matrix_multiply(m1: &Vec<f32>, m2: &Vec<f32>, res: &mut Vec<f32>) {
    adds a scalar value to each index of the matrix
 */
 fn matrix_scalar_add(matrix: &Vec<f32>, sv: f32, res: &mut Vec<f32>) {
-    f for i in 0..MATRIX_SIZE {
+    f for i in 0..MATRIX_SIZE-1 {
         res[i] = matrix[i] + sv;
     }
 }
@@ -221,7 +221,7 @@ fn matrix_scalar_add(matrix: &Vec<f32>, sv: f32, res: &mut Vec<f32>) {
    multiplies each index of the matrix by a scalar value
 */
 fn matrix_scalar_multiply(matrix: &Vec<f32>, sv: f32, res: &mut Vec<f32>) {
-    for i in 0..MATRIX_SIZE {
+    for i in 0..MATRIX_SIZE-1 {
         res[i] = matrix[i] * sv;
     }
 }
@@ -229,15 +229,19 @@ fn matrix_scalar_multiply(matrix: &Vec<f32>, sv: f32, res: &mut Vec<f32>) {
 /*
    calculates the Determinate of the given matrix
 */
-fn matrix_determinate(matrix: &Vec<f32>, res: &mut Vec<f32>){
-    
+fn matrix_determinate(matrix: &Vec<f32>) -> f32{
+    //hard-coded for initial functionality. can modularize if update in the future
+    let a = matrix[0] * ((matrix[4]*matrix[8]) - (matrix[5]*matrix[7]));
+    let b = matrix[1] * ((matrix[3]*matrix[8]) - (matrix[5]*matrix[6]));
+    let c = matrix[2] * ((matrix[3]*matrix[7]) - (matrix[4]*matrix[6]));
+    res = a - b + c
 }
 
 /*
    calculates the Trace of the given matrix
 */
 fn matrix_trace(matrix: &Vec<f32>, res: &mut Vec<f32>) {
-    
+    res
 }
 
 /*
@@ -249,9 +253,15 @@ fn matrix_transpose(matrix: &Vec<f32>, res: &mut Vec<f32>) {
 
 /*
    calculates the Inverse of the given matrix
+   first calculates the inverse determinate
+   then multiplies that by the adjugate of the matrix
+   this yields the inverse of the matrixd
 */
 fn matrix_inverse(matrix: &Vec<f32>, res: &mut Vec<f32>) {
-    
+    let invDet = 1 / matrix_determinate(matrix); //inverse of determinate
+    let mut adj: Vec<f32> = Vec::new(); 
+    matrix_adjugate(matrix, adj); //calculates adjugate matrix
+    matrix_scalar_multiply(adj, invDet, res)
 }
 
 /*
