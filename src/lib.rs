@@ -40,47 +40,80 @@ fn parse_op(expr: &str) -> Result<Operations, String> {
    2) each token is checked to see if it's an f32
    3) tokens are colected into the vec Result
 */
-/*
 fn parse_matrix(mat: &str) -> Result<Vec<f32>, String> {
-    //mat.split_whitespace().map(|num| {}
+    mat.split_whitespace().map(|num| {
+        match num.parse::<f32>() {
+            Ok(val) => Ok(val),
+            Err(_) => Err(format!("cannot parse value \"{}\" as f32", num))
+        }
+    })
+        .into_iter().collect()
 }
-*/
+
 
 /*
    prompts the user to enter a list of numbers, and uses them to create
    the matrix in row-major order (represented by a vec)
 */
-//fn fill_matrix(mat: &mut Vec<f32>) {
-    
-//}
+fn fill_matrix(mat: &mut Vec<f32>) {
+    let mut matrixString = String::new();
+    let mut err_flag: bool = false;
+    loop {
+        //reset error flag
+        err_flag = false;
+        
+        //prompt user for input
+        print!("> ");
+        io::stdout().flush().expect("failed to flush");
 
-
-fn setup_binary_op(m1: &mut Vec<f32>, m2: &mut Vec<f32>) {
-    println!("Enter the values for the first matrix in row-major order (separated by spaces):");
-    print!("> ");
-    io::stdout().flush().expect("failed to flush");
-    //fill_matrix(&mut m1)
-    //TEST CODE
-    let mut foo = String::new();
-    io::stdin().read_line(&mut foo).expect("failed to read line");
-    println!("finished reading 1st matrix. foo = {}", foo);
-    
-    println!("Enter the values for the second matrix in row-major order (separated by spaces):");
-    print!("> ");
-    io::stdout().flush().expect("failed to flush");
-    //fill_matrix(&mut m2)
-    //TEST CODE
-    let mut bar = String::new();
-    io::stdin().read_line(&mut bar).expect("failed to read line");
-    println!("finished reading 2nd matrix. bar = {}", bar);
+        //take user input into a string
+        io::stdin().read_line(&mut matrixString)
+            .expect("failed to read line");
+        
+        /*
+           1) parse the input string into f32 values
+           2) collect them into a Vec that will represent the matrix
+        */
+        match parse_matrix(&matrixString) {
+            Ok(mut matrixOk) => {
+                //mat = &mut matrixOk.clone();
+                //if the number of values is incorrect, errors + restarts
+                if matrixOk.len() != (MATRIX_SIZE as usize) {
+                    eprintln!("Invalid number of values");
+                    matrixOk.clear();
+                    matrixString.clear();
+                    println!("Enter the values for the matrix in row-major order (separated by spaces):");
+                    err_flag = true;
+                }
+            },
+            Err(mut err) => { //occurs when input vals are not f32s
+                eprintln!("{}", err);
+                err.clear();
+                matrixString.clear();
+                println!("Enter the values for the matrix in row-major order (separated by spaces):");
+                err_flag = true;
+            }
+        }
+        //once the matrix is filled and free of errors, exit the loop
+        if err_flag == false {
+            break;
+        }
+   }
 }
 
 
-fn setup_scalar_op(mat: &mut Vec<f32>) -> f32 {  
+fn setup_binary_op(mut m1: &mut Vec<f32>, mut m2: &mut Vec<f32>) {
+    println!("Enter the values for the first matrix in row-major order (separated by spaces):");
+    fill_matrix(&mut m1);
+    
+    println!("Enter the values for the second matrix in row-major order (separated by spaces):");
+    fill_matrix(&mut m2);
+}
+
+
+fn setup_scalar_op(mut mat: &mut Vec<f32>) -> f32 {  
     println!("Enter the values for the matrix in row-major order (separated by spaces):");
-    print!("> ");
-    io::stdout().flush().expect("failed to flush");
-    //fill_matrix(&mut mat)
+    fill_matrix(&mut mat);
     
     let mut scalarStr = String::new();
     //get the scalar value
@@ -95,28 +128,25 @@ fn setup_scalar_op(mat: &mut Vec<f32>) -> f32 {
             Ok(val) => {
                 return val; //does this return immediately, or do I need to call break?
             },
-            Err(_) => eprintln!("invalid scalar value"),
+            Err(_) => {
+                eprintln!("invalid scalar value");
+                scalarStr.clear();
+            }
         }
     }
 }
 
 
-fn setup_unary_op(mat: &mut Vec<f32>) {
+fn setup_unary_op(mut mat: &mut Vec<f32>) {
     println!("Enter the values for the matrix in
             row-major order (separated by spaces):");
-    print!("> ");
-    io::stdout().flush().expect("failed to flush");
-    //fill_matrix(&mut mat);
-    //TEST CODE
-    let mut foobar = String::new();
-    io::stdin().read_line(&mut foobar).expect("failed to read line");
-    println!("finished reading unary matrix. foobar = '{}'", foobar);
+    fill_matrix(&mut mat);
 }
 
 
 //prints a matrix in 2D format
-pub fn matrix_print(matrix: &Vec<f32>) {
-}
+//pub fn matrix_print(matrix: &Vec<f32>) {
+//}
 
 
 /*
@@ -154,7 +184,6 @@ pub fn evaluate() -> Result<Vec<f32>, String> {
                 },
                 Operations::ScalarAdd | Operations::ScalarMultiply => {
                     let scalar = setup_scalar_op(&mut matrix);
-                    println!("exited setup_scalar. scalar = {}", scalar);
                     /*if op == Operations::ScalarAdd {
                         result = matrix_scalar_add(&matrix, &scalar);
                     }
