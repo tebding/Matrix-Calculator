@@ -50,29 +50,69 @@ fn parse_matrix(mat: &str) -> Result<Vec<f32>, String> {
    prompts the user to enter a list of numbers, and uses them to create
    the matrix in row-major order (represented by a vec)
 */
-fn fill_matrix(mat: &mut Vec<f32>) {
+//fn fill_matrix(mat: &mut Vec<f32>) {
     
-}
+//}
 
 
 fn setup_binary_op(m1: &mut Vec<f32>, m2: &mut Vec<f32>) {
-
+    println!("Enter the values for the first matrix in row-major order (separated by spaces):");
+    print!("> ");
+    io::stdout().flush().expect("failed to flush");
+    //fill_matrix(&mut m1)
+    //TEST CODE
+    let mut foo = String::new();
+    io::stdin().read_line(&mut foo).expect("failed to read line");
+    println!("finished reading 1st matrix. foo = {}", foo);
+    
+    println!("Enter the values for the second matrix in row-major order (separated by spaces):");
+    print!("> ");
+    io::stdout().flush().expect("failed to flush");
+    //fill_matrix(&mut m2)
+    //TEST CODE
+    let mut bar = String::new();
+    io::stdin().read_line(&mut bar).expect("failed to read line");
+    println!("finished reading 2nd matrix. bar = {}", bar);
 }
 
 
-//fn setup_scalar_op(mat: &mut Vec<f32>, scalarStr: &str) -> f32 {  
-//}
+fn setup_scalar_op(mat: &mut Vec<f32>) -> f32 {  
+    println!("Enter the values for the matrix in row-major order (separated by spaces):");
+    print!("> ");
+    io::stdout().flush().expect("failed to flush");
+    //fill_matrix(&mut mat)
+    
+    let mut scalarStr = String::new();
+    //get the scalar value
+    loop { //to allow re-tries in case of errors
+        println!("Enter a scalar value to apply to the matrix:");
+        print!("> ");
+        io::stdout().flush().expect("failed to flush");
+        
+        io::stdin().read_line(&mut scalarStr)
+            .expect("failed to read line");
+        match scalarStr.trim().parse::<f32>() {
+            Ok(val) => {
+                return val; //does this return immediately, or do I need to call break?
+            },
+            Err(_) => eprintln!("invalid scalar value"),
+        }
+    }
+}
 
-/*
+
 fn setup_unary_op(mat: &mut Vec<f32>) {
     println!("Enter the values for the matrix in
             row-major order (separated by spaces):");
     print!("> ");
     io::stdout().flush().expect("failed to flush");
-    fill_matrix(&mut mat);
-
+    //fill_matrix(&mut mat);
+    //TEST CODE
+    let mut foobar = String::new();
+    io::stdin().read_line(&mut foobar).expect("failed to read line");
+    println!("finished reading unary matrix. foobar = '{}'", foobar);
 }
-*/
+
 
 //prints a matrix in 2D format
 pub fn matrix_print(matrix: &Vec<f32>) {
@@ -94,10 +134,51 @@ pub fn evaluate() -> Result<Vec<f32>, String> {
     io::stdin().read_line(&mut oper)
     .expect("failed to read line");
     
+    //the matrix to operate on. For scalar/binary ops, other vars assigned later
+    let mut matrix: Vec<f32> = Vec::new();
+    let mut result: Vec<f32> = Vec::new();
+
      return match parse_op(&oper) {
         Ok(op) => {
-            //run setup
             println!("\nOperaton parsed: {}", &oper);
+            match op {
+                Operations::Add | Operations::Multiply => {
+                    let mut matrix2: Vec<f32> = Vec::new();
+                    setup_binary_op(&mut matrix, &mut matrix2);
+                    /*if op == Operations::Add {
+                        result = matrix_add(&matrix, &matrix2);
+                    }
+                    else {
+                        result = matrix_multiply(&matrix, &matrix2
+                    }*/
+                },
+                Operations::ScalarAdd | Operations::ScalarMultiply => {
+                    let scalar = setup_scalar_op(&mut matrix);
+                    println!("exited setup_scalar. scalar = {}", scalar);
+                    /*if op == Operations::ScalarAdd {
+                        result = matrix_scalar_add(&matrix, &scalar);
+                    }
+                    else {
+                        result = matrix_scalar_multiply(&matrix, &scalar);
+                    }*/
+                },
+                _ => {
+                    setup_unary_op(&mut matrix);
+                    /*match op {
+                        //Operations::Determinate => {result = matrix_determinate(&matrix);},
+                        Operations::Transpose => {
+                            result = matrix_transpose(&matrix);
+                        },
+                        Operations::Inverse => {
+                            result = matrix_transpose(&matrix);
+                        },
+                        Operations::Adjugate => {
+                            result = matrix_adjugate(&matrix);
+                        },
+                    }*/
+                }
+            }
+            
             let test_mat: Vec<f32> = vec![1.0, 2.5, 4.2];
             return Ok(test_mat)
         },
