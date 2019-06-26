@@ -55,7 +55,7 @@ fn parse_matrix(mat: &str) -> Result<Vec<f32>, String> {
    prompts the user to enter a list of numbers, and uses them to create
    the matrix in row-major order (represented by a vec)
 */
-fn fill_matrix(mat: &mut Vec<f32>) {
+fn fill_matrix(mut mat: &mut Vec<f32>) {
     let mut matrixString = String::new();
     let mut err_flag: bool = false;
     loop {
@@ -76,7 +76,7 @@ fn fill_matrix(mat: &mut Vec<f32>) {
         */
         match parse_matrix(&matrixString) {
             Ok(mut matrixOk) => {
-                //mat = &mut matrixOk.clone();
+               
                 //if the number of values is incorrect, errors + restarts
                 if matrixOk.len() != (MATRIX_SIZE as usize) {
                     eprintln!("Invalid number of values");
@@ -84,6 +84,9 @@ fn fill_matrix(mat: &mut Vec<f32>) {
                     matrixString.clear();
                     println!("Enter the values for the matrix in row-major order (separated by spaces):");
                     err_flag = true;
+                }
+                for i in 0..MATRIX_SIZE-1 {
+                    mat[i] = matrixOk[i];
                 }
             },
             Err(mut err) => { //occurs when input vals are not f32s
