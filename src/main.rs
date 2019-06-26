@@ -3,7 +3,6 @@
 //takes an input matrix or matrices and operation to run on the matrix/matrices.
 //only works for 3x3 matrices!
 
-use std::io::{self, Write};
 use Matrix_Calculator::evaluate;
 
 fn main() {
