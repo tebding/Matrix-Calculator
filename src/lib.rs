@@ -85,8 +85,10 @@ fn fill_matrix(mut mat: &mut Vec<f32>) {
                     println!("Enter the values for the matrix in row-major order (separated by spaces):");
                     err_flag = true;
                 }
-                for i in 0..MATRIX_SIZE-1 {
-                    mat[i] = matrixOk[i];
+                else {
+                    while matrixOk.is_empty() == false {
+                        mat.push(matrixOk.pop().expect("failed to pop"));
+                    }
                 }
             },
             Err(mut err) => { //occurs when input vals are not f32s
