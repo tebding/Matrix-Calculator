@@ -44,7 +44,7 @@ fn parse_matrix(mat: &str) -> Result<Vec<f32>, String> {
     mat.split_whitespace().map(|num| {
         match num.parse::<f32>() {
             Ok(val) => Ok(val),
-            Err(_) => Err(format!("cannot parse value \"{}\" as f32", num))
+            Err(_) => Err(format!("value \"{}\" is not a number", num))
         }
     })
         .into_iter().collect()
@@ -87,8 +87,12 @@ fn fill_matrix(mut mat: &mut Vec<f32>) {
                 }
                 else {
                     while matrixOk.is_empty() == false {
+                        //I couldn't index this properly, so using push() and pop()
+                        //was the only solution I could devise that worked.
                         mat.push(matrixOk.pop().expect("failed to pop"));
                     }
+                    //the matrix is in reverse order at this point. reverse() fixes it
+                    mat.reverse();
                 }
             },
             Err(mut err) => { //occurs when input vals are not f32s
@@ -150,8 +154,11 @@ fn setup_unary_op(mut mat: &mut Vec<f32>) {
 
 
 //prints a matrix in 2D format
-//pub fn matrix_print(matrix: &Vec<f32>) {
-//}
+pub fn matrix_print(matrix: &Vec<f32>) {
+    println!("[{} {} {}]", matrix[0], matrix[1], matrix[2]);
+    println!("[{} {} {}]", matrix[3], matrix[4], matrix[5]);
+    println!("[{} {} {}]", matrix[6], matrix[7], matrix[8]);
+}
 
 
 /*
@@ -180,26 +187,29 @@ pub fn evaluate() -> Result<Vec<f32>, String> {
                 Operations::Add | Operations::Multiply => {
                     let mut matrix2: Vec<f32> = Vec::new();
                     setup_binary_op(&mut matrix, &mut matrix2);
-                    /*if op == Operations::Add {
+                    if op == Operations::Add {
                         result = matrix_add(&matrix, &matrix2);
                     }
                     else {
                         result = matrix_multiply(&matrix, &matrix2
-                    }*/
+                    }
                 },
                 Operations::ScalarAdd | Operations::ScalarMultiply => {
                     let scalar = setup_scalar_op(&mut matrix);
-                    /*if op == Operations::ScalarAdd {
-                        result = matrix_scalar_add(&matrix, &scalar);
+                    matrix_print(&matrix);
+                    if op == Operations::ScalarAdd {
+                        result = matrix_scalar_add(&matrix, scalar);
                     }
                     else {
-                        result = matrix_scalar_multiply(&matrix, &scalar);
-                    }*/
+                        result = matrix_scalar_multiply(&matrix, scalar);
+                    }
                 },
                 _ => {
                     setup_unary_op(&mut matrix);
-                    /*match op {
-                        //Operations::Determinate => {result = matrix_determinate(&matrix);},
+                    match op {
+                        Operations::Determinant => {
+                            result = matrix_determinant(&matrix);
+                        },
                         Operations::Transpose => {
                             result = matrix_transpose(&matrix);
                         },
@@ -209,12 +219,10 @@ pub fn evaluate() -> Result<Vec<f32>, String> {
                         Operations::Adjugate => {
                             result = matrix_adjugate(&matrix);
                         },
-                    }*/
+                    }
                 }
             }
-            
-            let test_mat: Vec<f32> = vec![1.0, 2.5, 4.2];
-            return Ok(test_mat)
+            return Ok(result)
         },
         Err(err) => Err(err),
      }
@@ -224,39 +232,76 @@ pub fn evaluate() -> Result<Vec<f32>, String> {
 //MATRIX CALCULATION FUNCTIONS
 
 //adds the values of each matrix's equivalent indices together
-/*fn matrix_add() {}
+fn matrix_add(mat1: &Vec<f32>, mat2: &Vec<f32>) -> Vec<f32> {
+    for i in 0..MATRIX_SIZE-1 {
+        res[i] = mat1[i] + mat2[i];
+    } 
+}
 
 
 //performs matrix multiplication
-fn matrix_multiply() {}
+fn matrix_multiply(mat1: &Vec<f32>, mat2: &Vec<f32>) -> Vec<f32> {
+    
+}
 
 
 //adds the given value to each index in the matrix
-fn matrix_scalar_add() {}
+fn matrix_scalar_add(matrix: &Vec<f32>, scalar: f32) -> Vec<f32> {
+    for i in 0..MATRIX_SIZE-1 {
+        res[i] = matrix[i] + scalar;
+    }
+}
 
 
 //multiplies each index of the matrix by a scalar value
-fn matrix_scalar_multiply() {}
+fn matrix_scalar_multiply(matrix: &Vec<f32>, scalar: f32) -> Vec<f32> {
+     for i in 0..MATRIX_SIZE-1 {
+        res[i] = matrix[i] * scalar;
+    }
+}
 
 
 //calculates the Determinate of the given matrix
-fn matrix_determinate() {}
+    //the output will be a vector of length 1.
+fn matrix_determinant(matrix: &Vec<f32>) -> Vec<f32> {
+    //hard-coded feels bad :(
+    //if I ever change this to operate on aribitrary-size matrices I can fix it
+    //recursively calculate determinants, alternate + and - until done.
+    let a = matrix[0] * (matrix[4]*matrix[8] - matrix[5]*matrix[7]);
+    let b = matrix[1] * (matrix[3]*matrix[8] - matrix[5]*matrix[6]);
+    let c = matrix[3] * (matrix[3]*matrix[7] - matrix[4]*matrix[6]);
+    let d: Vec<f32> = Vec::new();
+    d.push(a - b + c)
+}
 
 
 //calculates the Transpose of the given matrix
-fn matrix_transpose() {}
-
-
-//helper function?
+fn matrix_transpose(matrix: &Vec<f32>) -> Vec<f32> {
+    //hard-coding for now. perhaps recursive solution possible.
+    let res: Vec<f32> = Vec::new();
+    res.push(matrix[0]);
+    res.push(matrix[3]);
+    res.push(matrix[6]);
+    res.push(matrix[1]);
+    res.push(matrix[4]);
+    res.push(matrix[7]);
+    res.push(matrix[2]);
+    res.push(matrix[5]);
+    res.push(matrix[8])
+}
 
 
 /*
    calculates the Inverse of the given matrix
-   1) calculates the inverse of the determinate
+   1) calculates the inverse of the determinant
    2) multiples it by the adjugate of the matrix
       which yields the inversed matrix
 */
-fn matrix_inverse() {}
+fn matrix_inverse(matrix: &Vec<f32>) -> Vec<f32> {
+    let invDet = 1 / matrix_determinant(&matrix);
+    let adj = matrix_adjugate(&matrix);
+    res = matrix_scalar_multiply(&adj, invDet)
+}
 
 
 /*
@@ -266,4 +311,8 @@ fn matrix_inverse() {}
    2) transposes he resultant cofactor matrix, which
       yields the adjugate matrix that we proceed to return
 */
-*/
+fn matrix_adjugate(matrix: &Vec<f32>) -> Vec<f32> {
+    
+}
+
+
