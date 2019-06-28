@@ -192,7 +192,7 @@ pub fn evaluate() -> Result<Vec<f32>, String> {
                 Operations::Multiply => {
                     let mut matrix2: Vec<f32> = Vec::new();
                     setup_binary_op(&mut matrix, &mut matrix2);
-                    //result = matrix_multiply(&mut matrix, &mut matrix2);
+                    result = matrix_multiply(&matrix, &matrix2);
                 },
                 Operations::ScalarAdd => {
                     let scalar = setup_scalar_op(&mut matrix);
@@ -240,15 +240,36 @@ fn matrix_add(mat1: &mut Vec<f32>, mat2: &mut Vec<f32>) -> Vec<f32> {
     res
 }
 
+//TODO: WORK ON THIS MORE!!!!
 
 //performs matrix multiplication
-/*
-fn matrix_multiply(mat1: &Vec<f32>, mat2: &Vec<f32>) -> Vec<f32> {
+fn matrix_multiply(mat1: &Vec<f32>, m2: &Vec<f32>) -> Vec<f32> {
     let mut res: Vec<f32> = Vec::new();
+
+    //by transposing the second matrix the abstraction requires fewer translations
+    let mat2 = matrix_transpose(&m2);
     
+    let mut j = 0; //to track the first index of the current row
+    let mut k = 0; //to track the index of the second matrix
+    let mut temp = 0;
+    
+    for i in 0..MATRIX_SIZE {
+        if (i-1)%3 == 0 { //when at a new row: 
+            j += 3; //our row-marker is increased
+            k = 0; //our 2nd matrix tracker is reset
+        }
+        //temp will have all 3 components added, then applied to res[i]
+        
+        for l in 0..3 { //loop for 3
+        //row-starter + 2nd matrix column = which 1st matrix index to use
+            temp += mat1[j+(k%3)] * mat2[k];
+            k++;
+        }
+        res[i] = temp;
+    }
     res
 }
-*/
+
 
 
 //adds the given value to each index in the matrix
