@@ -228,7 +228,9 @@ pub fn evaluate() -> Result<Vec<f32>, String> {
 }
 
 
-//MATRIX CALCULATION FUNCTIONS
+/*
+    CALCULATION FUNCTIONS
+*/
 
 //adds the values of each matrix's equivalent indices together
 fn matrix_add(mat1: &mut Vec<f32>, mat2: &mut Vec<f32>) -> Vec<f32> {
@@ -240,7 +242,6 @@ fn matrix_add(mat1: &mut Vec<f32>, mat2: &mut Vec<f32>) -> Vec<f32> {
     res
 }
 
-//TODO: WORK ON THIS MORE!!!!
 
 //performs matrix multiplication
 fn matrix_multiply(mat1: &Vec<f32>, m2: &Vec<f32>) -> Vec<f32> {
@@ -248,28 +249,31 @@ fn matrix_multiply(mat1: &Vec<f32>, m2: &Vec<f32>) -> Vec<f32> {
 
     //by transposing the second matrix the abstraction requires fewer translations
     let mat2 = matrix_transpose(&m2);
-    
+    matrix_print(&m2);
     let mut j = 0; //to track the first index of the current row
     let mut k = 0; //to track the index of the second matrix
-    let mut temp = 0;
+    let mut temp: f32 = 0.0;
     
     for i in 0..MATRIX_SIZE {
-        if (i-1)%3 == 0 { //when at a new row: 
+        println!("blarg");
+        if (i%3 == 0) && (i != 0) { //when at a new row: 
+            println!("foo");
             j += 3; //our row-marker is increased
             k = 0; //our 2nd matrix tracker is reset
         }
         //temp will have all 3 components added, then applied to res[i]
         
-        for l in 0..3 { //loop for 3
+        for l in 0..3 { //loop for 3. hard-coded for sqrt(MATRIX_SIZE)
         //row-starter + 2nd matrix column = which 1st matrix index to use
+            println!("k = {}", k);
             temp += mat1[j+(k%3)] * mat2[k];
-            k++;
+            k += 1;
         }
-        res[i] = temp;
+        res.push(temp);
+        temp = 0.0;
     }
     res
 }
-
 
 
 //adds the given value to each index in the matrix
