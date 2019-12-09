@@ -102,7 +102,7 @@ pub fn setup_scalar() -> f32 {
     let mut scalar_str = String::new();
     //get the scalar value
     loop { //to allow re-tries in case of errors
-        println!("Enter a scalar value to apply to the matrix:\n> ");
+        print!("Enter a scalar value to apply to the matrix:\n> ");
         io::stdout().flush().expect("failed to flush");
         
         io::stdin().read_line(&mut scalar_str)

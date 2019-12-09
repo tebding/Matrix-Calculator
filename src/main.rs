@@ -66,15 +66,14 @@ fn evaluate() -> Result<Vec<f32>, String> {
                     fill_matrix(&mut matrix2);
                     result = matrix_multiply(&matrix, &matrix2);
                 },
-                Operations::ScalarAdd => {
+                Operations::ScalarAdd | Operations::ScalarMultiply => {
                     fill_matrix(&mut matrix);
                     let scalar = setup_scalar();
-                    result = matrix_scalar_add(&mut matrix, scalar);
-                },
-                Operations::ScalarMultiply => {
-                    fill_matrix(&mut matrix);
-                    let scalar = setup_scalar();
-                    result = matrix_scalar_multiply(&mut matrix, scalar);
+                    match op {
+                        Operations::ScalarAdd => result = matrix_scalar_add(&mut matrix, scalar),
+                        Operations::ScalarMultiply => result = matrix_scalar_multiply(&mut matrix, scalar),
+                        _ => (),
+                    }
                 },
                 _ => {
                     fill_matrix(&mut matrix);
