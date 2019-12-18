@@ -45,7 +45,7 @@ fn evaluate() -> Result<Vec<f32>, String> {
     //the matrix to operate on. For scalar/binary ops, other vars assigned later
     let mut matrix: Vec<f32> = Vec::new();
     let mut result: Vec<f32> = Vec::new();
-    let mut matrix_size = set_matrix_size(); //TODO: define
+    let mut matrix_size = set_matrix_size(); 
     fill_matrix(&mut matrix, &matrix_size);
 
     println!("the input matrix:");
@@ -63,8 +63,8 @@ fn evaluate() -> Result<Vec<f32>, String> {
                 Operations::Multiply => {
                     let mut matrix2: Vec<f32> = Vec::new();
                     println!("For the second matrix:");
+                    let mut matrix2_size = set_matrix_size();
                     loop {
-                        let matrix2_size = set_matrix_size();
                         if matrix_size[1] == matrix2_size[0] {
                             break; //OK
                         }
@@ -74,12 +74,13 @@ fn evaluate() -> Result<Vec<f32>, String> {
                                         of the second matrix must match the second value of \
                                         the first matrix).
                                         Try again with a valid input.");
+                            matrix2_size = set_matrix_size();
                         }
                     }
                     fill_matrix(&mut matrix2, &mut matrix2_size);
                     //TODO: implement updated function.
                     //result = matrix_multiply(&matrix, &matrix_size, 
-                                             &matrix2, &matrix2_size);
+                    //                         &matrix2, &matrix2_size);
                 },
                 Operations::ScalarAdd => {
                     let scalar = setup_scalar();
@@ -87,7 +88,7 @@ fn evaluate() -> Result<Vec<f32>, String> {
                 },
                 Operations::ScalarMultiply => {
                     let scalar = setup_scalar();
-                    result = matrix_scalar_multiply(&mut matrix, scalar),
+                    result = matrix_scalar_multiply(&mut matrix, scalar);
                 },
                 Operations::Determinant => {
                     //must ensure matrix is square

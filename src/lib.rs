@@ -11,12 +11,15 @@ pub enum Operations {
     Multiply,
     ScalarMultiply,
     Determinant,
-    Trace,
     Transpose,
     Inverse,
     Adjugate,
 }
 
+
+/*******************************************
+           OPERATIONAL FUNCTIONS
+*******************************************/
 
 //translates input string into an Operations enum
 pub fn parse_op(expr: &str) -> Result<Operations, String> {
@@ -26,7 +29,6 @@ pub fn parse_op(expr: &str) -> Result<Operations, String> {
         "Multiply" => Ok (Operations::Multiply),
         "ScalarMultiply" => Ok(Operations::ScalarMultiply),
         "Determinant" => Ok(Operations::Determinant),
-        "Trace" => Ok(Operations::Trace),
         "Transpose" => Ok(Operations::Transpose),
         "Inverse" => Ok(Operations::Inverse),
         "Adjugate" => Ok(Operations::Adjugate),
@@ -40,8 +42,8 @@ pub fn parse_op(expr: &str) -> Result<Operations, String> {
    2) each token is checked to see if it's an f32
    3) tokens are colected into the vec Result
 */
-pub fn parse_matrix(mat: &str) -> Result<Vec<f32>, String> {
-    mat.split_whitespace().map(|num| {
+fn parse_matrix(matrix: &str) -> Result<Vec<f32>, String> {
+    matrix.split_whitespace().map(|num| {
         match num.parse::<f32>() {
             Ok(val) => Ok(val),
             Err(_) => Err(format!("value \"{}\" is not a number", num))
@@ -50,12 +52,22 @@ pub fn parse_matrix(mat: &str) -> Result<Vec<f32>, String> {
         .into_iter().collect()
 }
 
+//as parse_matrix, but for matrix size
+fn parse_size(size: &str) -> Result<Vec<usize>, String> {
+    size.split_whitespace().map(|num| {
+        match num.parse::<usize>() {
+            Ok(val) => Ok(val),
+            Err(_) => Err(format!("value \"{}\" is not valid", num)),
+        }
+    })
+        .into_iter().collect()
+}
 
 /*
    prompts the user to enter a list of numbers, and uses them to create
    the matrix in row-major order (represented by a vec)
 */
-pub fn fill_matrix(mat: &mut Vec<f32>) {
+pub fn fill_matrix(mat: &mut Vec<f32>, size: &Vec<usize>) {
     loop {
         //prompt user for input
         print!("Enter the values for the matrix in row-major order \
@@ -97,6 +109,30 @@ pub fn fill_matrix(mat: &mut Vec<f32>) {
     }
 }
 
+//asks the user for input, then parses and sets matrix size from it
+pub fn set_matrix_size() -> Vec<usize> {
+    loop { //to allow for re-tries in case of user error
+        // I/O
+        print!("enter size\n> ");
+        io::stdout().flush().unwrap();
+        let mut size_str = String::new();
+        io::stdin().read_line(&mut size_str).expect("error reading line");
+        
+        match parse_size(&size_str) {
+            Ok(mut size_ok) => {
+                if size_ok.len() != 2 {
+                    eprintln!("must have exactly 2 dimensions");
+                }
+                else {
+                    size_ok.push(size_ok[0] * size_ok[1]); //set 3rd index to total capacity
+                    return size_ok;
+                }
+            },
+            Err(err) => eprintln!("{}", err),
+        }
+    }
+}
+
 
 pub fn setup_scalar() -> f32 {  
     let mut scalar_str = String::new();
@@ -121,7 +157,7 @@ pub fn setup_scalar() -> f32 {
 
 
 //prints a matrix in 2D format (hardcoded)
-pub fn matrix_print(matrix: &Vec<f32>) {
+pub fn matrix_print(matrix: &Vec<f32>, size: &Vec<usize>) {
     println!("[{} {} {}]", matrix[0], matrix[1], matrix[2]);
     println!("[{} {} {}]", matrix[3], matrix[4], matrix[5]);
     println!("[{} {} {}]\n", matrix[6], matrix[7], matrix[8]);
@@ -144,11 +180,12 @@ pub fn matrix_add(mat1: &mut Vec<f32>, mat2: &mut Vec<f32>) -> Vec<f32> {
 
 
 //performs matrix multiplication
-pub fn matrix_multiply(mat1: &Vec<f32>, m2: &Vec<f32>) -> Vec<f32> {
+pub fn matrix_multiply(matrix1: &Vec<f32>, size1: &Vec<usize>,
+                       matrix2: &Vec<f32>, mut size2: &mut Vec<usize>) -> Vec<f32> {
     let mut res: Vec<f32> = Vec::new();
 
     //by transposing the second matrix the abstraction requires fewer translations
-    let mat2 = matrix_transpose(&m2);
+    let matrix2 = matrix_transpose(&matrix2, &mut size2);
     let mut j = 0; //to track the first index of the current row
     let mut k = 0; //to track the index of the second matrix
     let mut temp: f32 = 0.0;
@@ -162,7 +199,7 @@ pub fn matrix_multiply(mat1: &Vec<f32>, m2: &Vec<f32>) -> Vec<f32> {
         
         for _l in 0..3 { //loop for 3. hard-coded for sqrt(MATRIX_SIZE)
         //row-starter + 2nd matrix column = which 1st matrix index to use
-            temp += mat1[j+(k%3)] * mat2[k];
+            temp += matrix1[j+(k%3)] * matrix2[k];
             k += 1;
         }
         res.push(temp);
@@ -196,7 +233,7 @@ pub fn matrix_scalar_multiply(matrix: &mut Vec<f32>, scalar: f32) -> Vec<f32> {
 
 //calculates the Determinant of the given matrix
     //the output will be a vector of length 1.
-pub fn matrix_determinant(matrix: &Vec<f32>) -> Vec<f32> {
+pub fn matrix_determinant(matrix: &Vec<f32>, size: &Vec<usize>) -> Vec<f32> {
     //hard-coded feels bad :(
     //if I ever change this to operate on aribitrary-size matrices I can fix it
     //recursively calculate determinants, alternate + and - until done.
@@ -211,7 +248,7 @@ pub fn matrix_determinant(matrix: &Vec<f32>) -> Vec<f32> {
 
 
 //calculates the Transpose of the given matrix
-pub fn matrix_transpose(matrix: &Vec<f32>) -> Vec<f32> {
+pub fn matrix_transpose(matrix: &Vec<f32>, size: &mut Vec<usize>) -> Vec<f32> {
     //hard-coding for now. perhaps recursive solution possible.
     let mut res: Vec<f32> = Vec::new();
     res.push(matrix[0]);
@@ -233,10 +270,10 @@ pub fn matrix_transpose(matrix: &Vec<f32>) -> Vec<f32> {
    2) multiples it by the adjugate of the matrix
       which yields the inversed matrix
 */
-pub fn matrix_inverse(matrix: &Vec<f32>) -> Vec<f32> {
-    let det = matrix_determinant(&matrix);
+pub fn matrix_inverse(matrix: &Vec<f32>, mut size: &mut Vec<usize>) -> Vec<f32> {
+    let det = matrix_determinant(&matrix, &size);
     let inv_det = 1.0 / (det[0] as f32);
-    let mut adj = matrix_adjugate(&matrix);
+    let mut adj = matrix_adjugate(&matrix, &mut size);
     let res = matrix_scalar_multiply(&mut adj, inv_det);
     res
 }
@@ -249,7 +286,7 @@ pub fn matrix_inverse(matrix: &Vec<f32>) -> Vec<f32> {
    2) transposes he resultant cofactor matrix, which
       yields the adjugate matrix that we proceed to return
 */
-pub fn matrix_adjugate(matrix: &Vec<f32>) -> Vec<f32> {
+pub fn matrix_adjugate(matrix: &Vec<f32>, mut size: &mut Vec<usize>) -> Vec<f32> {
     let mut res: Vec<f32> = Vec::new();
     //unfortunately hard-coded to the initial positions of
     //determinant component vars (for a 3x3 matrix)
@@ -303,7 +340,7 @@ pub fn matrix_adjugate(matrix: &Vec<f32>) -> Vec<f32> {
             _ => (),
         };
     }
-    res = matrix_transpose(&res);
+    res = matrix_transpose(&res, &mut size);
     res
 }
 
