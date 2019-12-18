@@ -1,7 +1,6 @@
 //main.rs
 //matrix math calculator
 //takes an input matrix or matrices and operation to run on the matrix/matrices.
-//only works for 3x3 matrices!
 
 use matrix_calculator::{*};
 use std::io::{self, Write};
@@ -18,7 +17,7 @@ fn main() {
                     println!("{}\n", res[0]);
                 }
                 else {
-                    matrix_print(&res);
+                    //matrix_print(&res);
                 }
             },
             Err(err) => eprintln!("Error: {}", err),
@@ -46,53 +45,78 @@ fn evaluate() -> Result<Vec<f32>, String> {
     //the matrix to operate on. For scalar/binary ops, other vars assigned later
     let mut matrix: Vec<f32> = Vec::new();
     let mut result: Vec<f32> = Vec::new();
+    let mut matrix_size = set_matrix_size(); //TODO: define
+    fill_matrix(&mut matrix, &matrix_size);
 
-     return match parse_op(&oper) {
+    println!("the input matrix:");
+    matrix_print(&matrix, &matrix_size);
+    
+    return match parse_op(&oper) {
         Ok(op) => {
             match op {
                 Operations::Add => {
                     let mut matrix2: Vec<f32> = Vec::new();
-                    println!("For the first matrix:");
-                    fill_matrix(&mut matrix);
                     println!("For the second matrix:");
-                    fill_matrix(&mut matrix2);
+                    fill_matrix(&mut matrix2, &matrix_size);
                     result = matrix_add(&mut matrix, &mut matrix2);
                 },
                 Operations::Multiply => {
                     let mut matrix2: Vec<f32> = Vec::new();
-                    println!("For the first matrix:");
-                    fill_matrix(&mut matrix);
                     println!("For the second matrix:");
-                    fill_matrix(&mut matrix2);
-                    result = matrix_multiply(&matrix, &matrix2);
+                    loop {
+                        let matrix2_size = set_matrix_size();
+                        if matrix_size[1] == matrix2_size[0] {
+                            break; //OK
+                        }
+                        else {
+                            eprintln!("The input dimensions cannot be multiplied with \
+                                        the dimensions of the first matrix (the first value \
+                                        of the second matrix must match the second value of \
+                                        the first matrix).
+                                        Try again with a valid input.");
+                        }
+                    }
+                    fill_matrix(&mut matrix2, &mut matrix2_size);
+                    //TODO: implement updated function.
+                    //result = matrix_multiply(&matrix, &matrix_size, 
+                                             &matrix2, &matrix2_size);
                 },
-                Operations::ScalarAdd | Operations::ScalarMultiply => {
-                    fill_matrix(&mut matrix);
+                Operations::ScalarAdd => {
                     let scalar = setup_scalar();
-                    match op {
-                        Operations::ScalarAdd => result = matrix_scalar_add(&mut matrix, scalar),
-                        Operations::ScalarMultiply => result = matrix_scalar_multiply(&mut matrix, scalar),
-                        _ => (),
-                    }
+                    result = matrix_scalar_add(&mut matrix, scalar);
                 },
-                _ => {
-                    fill_matrix(&mut matrix);
-                    match op {
-                        Operations::Determinant => {
-                            result = matrix_determinant(&matrix);
-                        },
-                        Operations::Transpose => {
-                            result = matrix_transpose(&matrix);
-                        },
-                        Operations::Inverse => {
-                            result = matrix_inverse(&matrix);
-                        },
-                        Operations::Adjugate => {
-                            result = matrix_adjugate(&matrix);
-                        },
-                        _ => eprintln!("how did this happen"),
+                Operations::ScalarMultiply => {
+                    let scalar = setup_scalar();
+                    result = matrix_scalar_multiply(&mut matrix, scalar),
+                },
+                Operations::Determinant => {
+                    //must ensure matrix is square
+                    if matrix_size[0] != matrix_size[1] {
+                        return Err(format!("ERROR:\
+                                    determinant undefined for non-square matrices."));
                     }
-                }
+                    else if matrix_size[0] != 1 {
+                        return Err(format!("ERROR: \
+                                    determinant undefined for matrices of size 1."));
+                    }
+                    //TODO: update implementation
+                    //result = matrix_determinant(&matrix);
+                },
+                Operations::Transpose => {
+                    //TODO: update implementation
+                    //result = matrix_transpose(&matrix, &mut matrix_size);
+                    //note: mutable reference because transpose changes the dimensions
+                },
+                Operations::Inverse => {
+                    //TODO: update implementation
+                    //result = matrix_inverse(&matrix, &mut matrix_size);
+                    //note: mutable reference because function calls matrix_transpose
+                },
+                Operations::Adjugate => {
+                    //TODO: update implementation
+                    //result = matrix_adjugate(&matrix, &mut matrix_size);
+                    //note: mutable reference because function calls matrix_transpose
+                },
             }
             return Ok(result)
         },
