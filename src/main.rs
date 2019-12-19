@@ -34,7 +34,7 @@ fn main() {
 */
 fn evaluate() -> Result<Vec<f32>, String> {
     print!("Enter the operation to be performed (CTRL+C to exit). Valid operations include:\n\
-            Add, ScalarAdd, Multiply, ScalarMultiply, Determinant, Transpose, Inverse, Adjugate\n\
+            Add, Scalar Add, Multiply, Scalar Multiply, Determinant, Transpose, Inverse, Adjugate\n\
             > ");
     io::stdout().flush().expect("failed to flush");
     
@@ -93,19 +93,16 @@ fn evaluate() -> Result<Vec<f32>, String> {
                 Operations::Determinant => {
                     //must ensure matrix is square
                     if matrix_size[0] != matrix_size[1] {
-                        return Err(format!("ERROR:\
-                                    determinant undefined for non-square matrices."));
+                        return Err(format!("determinant undefined for non-square matrices."));
                     }
-                    else if matrix_size[0] != 1 {
+                    else if matrix_size[0] == 1 {
                         return Err(format!("ERROR: \
                                     determinant undefined for matrices of size 1."));
                     }
-                    //TODO: update implementation
-                    //result = matrix_determinant(&matrix);
+                    result = matrix_determinant(&matrix, &mut matrix_size);
                 },
                 Operations::Transpose => {
-                    //TODO: update implementation
-                    //result = matrix_transpose(&matrix, &mut matrix_size);
+                    result = matrix_transpose(&matrix, &mut matrix_size);
                     //note: mutable reference because transpose changes the dimensions
                 },
                 Operations::Inverse => {
@@ -119,6 +116,7 @@ fn evaluate() -> Result<Vec<f32>, String> {
                     //note: mutable reference because function calls matrix_transpose
                 },
             }
+            matrix_print(&result, &matrix_size);
             return Ok(result)
         },
         Err(err) => Err(err),

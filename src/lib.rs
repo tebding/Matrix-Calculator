@@ -23,15 +23,16 @@ pub enum Operations {
 
 //translates input string into an Operations enum
 pub fn parse_op(expr: &str) -> Result<Operations, String> {
-    match expr.trim() {
-        "Add" => Ok(Operations::Add),
-        "ScalarAdd" => Ok(Operations::ScalarAdd),
-        "Multiply" => Ok (Operations::Multiply),
-        "ScalarMultiply" => Ok(Operations::ScalarMultiply),
-        "Determinant" => Ok(Operations::Determinant),
-        "Transpose" => Ok(Operations::Transpose),
-        "Inverse" => Ok(Operations::Inverse),
-        "Adjugate" => Ok(Operations::Adjugate),
+    match expr.to_ascii_lowercase().trim() {
+        "add" => Ok(Operations::Add),
+        "scalar add" => Ok(Operations::ScalarAdd),
+        "multiply" | "mult" => Ok (Operations::Multiply),
+        "scalar multiply" | "scalar mult" => Ok(Operations::ScalarMultiply),
+        "determinant" | "det" => Ok(Operations::Determinant),
+        "transpose" | "trans" => Ok(Operations::Transpose),
+        "inverse" | "inv" => Ok(Operations::Inverse),
+        "adjugate" | "adj" => Ok(Operations::Adjugate),
+        //"Exit" | "exit" => Ok("exit"); //instead of an operation, exits the main loop
         _ => Err(format!("Cannot parse operation")),
     }
 }
@@ -101,7 +102,7 @@ pub fn fill_matrix(matrix: &mut Vec<f32>, size: &Vec<usize>) {
                     break;
                 }
             },
-            Err(mut err) => eprintln!("{}", err), //occurs when input vals are not f32s
+            Err(err) => eprintln!("{}", err), //occurs when input vals are not f32s
         }
     }
 }
@@ -172,14 +173,13 @@ pub fn matrix_print(matrix: &Vec<f32>, size: &Vec<usize>) {
 /************************************
         CALCULATION FUNCTIONS
 ************************************/
-//TODO: optimize addition!!
+
 //adds the values of each matrix's equivalent indices together
-pub fn matrix_add(mat1: &mut Vec<f32>, mat2: &mut Vec<f32>) -> Vec<f32> {
-    let mut res: Vec<f32> = Vec::new();
-    while mat1.is_empty() != true {
-        res.push(mat1.pop().expect("foo") + mat2.pop().expect("bar"));
+pub fn matrix_add(matrix1: &mut Vec<f32>, matrix2: &mut Vec<f32>) -> Vec<f32> {
+    let mut res: Vec<f32> = Vec::with_capacity(matrix1.len());
+    while matrix1.is_empty() != true {
+        res.push(matrix1.remove(0) + matrix2.remove(0));
     }
-    res.reverse();
     res
 }
 
@@ -216,22 +216,20 @@ pub fn matrix_multiply(matrix1: &Vec<f32>, size1: &Vec<usize>,
 
 //adds the given value to each index in the matrix
 pub fn matrix_scalar_add(matrix: &mut Vec<f32>, scalar: f32) -> Vec<f32> {
-    let mut res: Vec<f32> = Vec::new();
+    let mut res: Vec<f32> = Vec::with_capacity(matrix.len());
     while matrix.is_empty() != true {
-        res.push(matrix.pop().expect("bleh") + scalar);
+        res.push(matrix.remove(0) + scalar);
     }
-    res.reverse();
     res
 }
 
 
 //multiplies each index of the matrix by a scalar value
 pub fn matrix_scalar_multiply(matrix: &mut Vec<f32>, scalar: f32) -> Vec<f32> {
-    let mut res: Vec<f32> = Vec::new();
+    let mut res: Vec<f32> = Vec::with_capacity(matrix.len());
     while matrix.is_empty() != true {
-        res.push(matrix.pop().expect("bah") * scalar);
+        res.push(matrix.remove(0) * scalar);
     }
-    res.reverse();
     res
 }
 
@@ -254,17 +252,22 @@ pub fn matrix_determinant(matrix: &Vec<f32>, size: &Vec<usize>) -> Vec<f32> {
 
 //calculates the Transpose of the given matrix
 pub fn matrix_transpose(matrix: &Vec<f32>, size: &mut Vec<usize>) -> Vec<f32> {
-    //hard-coding for now. perhaps recursive solution possible.
-    let mut res: Vec<f32> = Vec::new();
-    res.push(matrix[0]);
-    res.push(matrix[3]);
-    res.push(matrix[6]);
-    res.push(matrix[1]);
-    res.push(matrix[4]);
-    res.push(matrix[7]);
-    res.push(matrix[2]);
-    res.push(matrix[5]);
-    res.push(matrix[8]);
+    let rows = size.remove(0);
+    let cols = size.remove(0);
+    let capacity = size.remove(0);
+    //the dimensions of a transposed matrix are swapped
+    size.push(cols);
+    size.push(rows);
+    size.push(capacity);
+    
+    let mut res: Vec<f32> = Vec::with_capacity(capacity);
+    for i in 0..cols {
+        let mut k: usize = i;
+        for _j in 0..rows {
+            res.push(matrix[k]);
+            k += cols;
+        }
+    }
     res
 }
 
@@ -292,7 +295,7 @@ pub fn matrix_inverse(matrix: &Vec<f32>, mut size: &mut Vec<usize>) -> Vec<f32> 
       yields the adjugate matrix that we proceed to return
 */
 pub fn matrix_adjugate(matrix: &Vec<f32>, mut size: &mut Vec<usize>) -> Vec<f32> {
-    let mut res: Vec<f32> = Vec::new();
+    let mut res: Vec<f32> = Vec::with_capacity(size[2]);
     //unfortunately hard-coded to the initial positions of
     //determinant component vars (for a 3x3 matrix)
     let mut a = 4;
