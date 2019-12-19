@@ -155,16 +155,24 @@ pub fn setup_scalar() -> f32 {
 
 //prints a matrix in 2D format (hardcoded)
 pub fn matrix_print(matrix: &Vec<f32>, size: &Vec<usize>) {
-    println!("[{} {} {}]", matrix[0], matrix[1], matrix[2]);
-    println!("[{} {} {}]", matrix[3], matrix[4], matrix[5]);
-    println!("[{} {} {}]\n", matrix[6], matrix[7], matrix[8]);
+    let mut i: usize = 0;
+    let rows = size[0];
+    let cols = size[1];
+    for _j in 0..rows {
+        print!("[ "); //each line begins with an opening bracket
+        for _k in 0..cols {
+            print!("{} ", matrix[i]);
+            i += 1;
+        }
+        println!("]"); //each line ends with a closing bracket
+    }
 }
 
 
-/*
-    CALCULATION FUNCTIONS
-*/
-
+/************************************
+        CALCULATION FUNCTIONS
+************************************/
+//TODO: optimize addition!!
 //adds the values of each matrix's equivalent indices together
 pub fn matrix_add(mat1: &mut Vec<f32>, mat2: &mut Vec<f32>) -> Vec<f32> {
     let mut res: Vec<f32> = Vec::new();
