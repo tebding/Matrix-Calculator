@@ -52,6 +52,9 @@ fn parse_matrix(matrix: &str) -> Result<Vec<f32>, String> {
         .into_iter().collect()
 }
 
+//TODO: make generic + combine with parse_matrix?
+    //lots of work to satisfy FromStr trait bound...
+
 //as parse_matrix, but for matrix size
 fn parse_size(size: &str) -> Result<Vec<usize>, String> {
     size.split_whitespace().map(|num| {
@@ -67,7 +70,7 @@ fn parse_size(size: &str) -> Result<Vec<usize>, String> {
    prompts the user to enter a list of numbers, and uses them to create
    the matrix in row-major order (represented by a vec)
 */
-pub fn fill_matrix(mat: &mut Vec<f32>, size: &Vec<usize>) {
+pub fn fill_matrix(matrix: &mut Vec<f32>, size: &Vec<usize>) {
     loop {
         //prompt user for input
         print!("Enter the values for the matrix in row-major order \
@@ -87,24 +90,18 @@ pub fn fill_matrix(mat: &mut Vec<f32>, size: &Vec<usize>) {
             Ok(mut matrix_ok) => {
                
                 //if the number of values is incorrect, errors + restarts
-                if matrix_ok.len() != (MATRIX_SIZE as usize) {
+                if matrix_ok.len() != (size[2]) {
                     eprintln!("Invalid number of values");
-                    matrix_ok.clear();
                 }
                 else {
                     while matrix_ok.is_empty() == false {
-                        //I couldn't index this properly, so using push() and pop()
-                        //was the only solution I could devise that worked.
-                        mat.push(matrix_ok.pop().expect("failed to pop"));
+                        matrix.push(matrix_ok.remove(0));
                     }
-                    //the matrix is in reverse order at this point. reverse() fixes it
-                    return mat.reverse();
+                    //the matrix is now filled.
+                    break;
                 }
             },
-            Err(mut err) => { //occurs when input vals are not f32s
-                eprintln!("{}", err);
-                err.clear();
-            }
+            Err(mut err) => eprintln!("{}", err), //occurs when input vals are not f32s
         }
     }
 }
@@ -145,7 +142,7 @@ pub fn setup_scalar() -> f32 {
             .expect("failed to read line");
         match scalar_str.trim().parse::<f32>() {
             Ok(val) => {
-                return val; //does this return immediately, or do I need to call break?
+                return val; 
             },
             Err(_) => {
                 eprintln!("invalid scalar value");
