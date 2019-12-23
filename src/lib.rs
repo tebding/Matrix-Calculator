@@ -208,26 +208,24 @@ pub fn matrix_add(matrix1: &mut Vec<f32>, matrix2: &mut Vec<f32>) -> Vec<f32> {
 pub fn matrix_multiply(matrix1: &Vec<f32>, size1: &Vec<usize>,
                        matrix2: &Vec<f32>, mut size2: &mut Vec<usize>) -> Vec<f32> {
     let mut res: Vec<f32> = Vec::new();
-
+    
     //by transposing the second matrix the abstraction requires fewer translations
     let matrix2 = matrix_transpose(&matrix2, &mut size2);
-    let mut j = 0; //to track the first index of the current row
-    let mut k = 0; //to track the index of the second matrix
+    let cols = size1[1];
+    let rows1 = size1[0];
+    let rows2 = size2[0];
     let mut temp: f32 = 0.0;
     
-    for i in 0..size1[1] { //number of columns
-        if (i%[size1[1] == 0) && (i != 0) { //when at a new row: 
-            j += 3; //our row-marker is increased
-            k = 0; //our 2nd matrix tracker is reset
+    for i in 0..rows1 { //iterate through each row of matrix1
+        let row1 = i * cols; 
+        for j in 0..rows2 { //iterate through each row of matrix2(transposed)
+            let row2 = j * cols;
+            for this_col in 0..cols { 
+                temp += matrix1[row1+this_col] * matrix2[row2+this_col];
+            }
+            res.push(temp);
+            temp = 0.0;
         }
-        
-        for _l in 0..size1[2] { //number of rows
-        //row-starter + 2nd matrix column = which 1st matrix index to use
-            temp += matrix1[j+(k%3)] * matrix2[k];
-            k += 1;
-        }
-        res.push(temp);
-        temp = 0.0;
     }
     res
 }

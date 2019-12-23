@@ -90,8 +90,8 @@ fn main() {
                                 println!("the input 2nd matrix:");
                                 matrix_print(&matrix2, &matrix2_size);
                                 
-                                //TODO result = matrix_multiply(&matrix, &mut matrix_size,
-                                //                                &matrix2, &mut matrix2_size);
+                                result = matrix_multiply(&matrix, &mut matrix_size,
+                                                                &matrix2, &mut matrix2_size);
                             },
                             Operations::ScalarAdd => {
                                 let scalar = setup_scalar();
