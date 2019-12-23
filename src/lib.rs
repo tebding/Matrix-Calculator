@@ -14,6 +14,7 @@ pub enum Operations {
     Transpose,
     Inverse,
     Adjugate,
+    Exit,
 }
 
 
@@ -32,7 +33,7 @@ pub fn parse_op(expr: &str) -> Result<Operations, String> {
         "transpose" | "trans" => Ok(Operations::Transpose),
         "inverse" | "inv" => Ok(Operations::Inverse),
         "adjugate" | "adj" => Ok(Operations::Adjugate),
-        //"Exit" | "exit" => Ok("exit"); //instead of an operation, exits the main loop
+        "exit" => Ok(Operations::Exit); //instead of an operation, exits the main loop
         _ => Err(format!("Cannot parse operation")),
     }
 }
@@ -53,10 +54,9 @@ fn parse_matrix(matrix: &str) -> Result<Vec<f32>, String> {
         .into_iter().collect()
 }
 
-//TODO: make generic + combine with parse_matrix?
-    //lots of work to satisfy FromStr trait bound...
 
-//as parse_matrix, but for matrix size
+//as parse_matrix, but for matrix size.
+//while a generic to cover both functions would be nicer, it's not worth implementing...
 fn parse_size(size: &str) -> Result<Vec<usize>, String> {
     size.split_whitespace().map(|num| {
         match num.parse::<usize>() {
@@ -237,16 +237,34 @@ pub fn matrix_scalar_multiply(matrix: &mut Vec<f32>, scalar: f32) -> Vec<f32> {
 //calculates the Determinant of the given matrix
     //the output will be a vector of length 1.
 pub fn matrix_determinant(matrix: &Vec<f32>, size: &Vec<usize>) -> Vec<f32> {
-    //hard-coded feels bad :(
-    //if I ever change this to operate on aribitrary-size matrices I can fix it
-    //recursively calculate determinants, alternate + and - until done.
-    let a = matrix[0] * (matrix[4]*matrix[8] - matrix[5]*matrix[7]);
-    let b = matrix[1] * (matrix[3]*matrix[8] - matrix[5]*matrix[6]);
-    let c = matrix[2] * (matrix[3]*matrix[7] - matrix[4]*matrix[6]);
-    let d = a - b + c;
-    let mut res: Vec<f32> = Vec::new();
-    res.push(d);
-    res
+    let mut res: Vec<f32> = Vec::with_capacity(1);
+    if size[0] == 2 {
+        let det = (matrix[0] * matrix[3]) - (matrix[1] * matrix[2]);
+        res.push(det);
+        res
+    }
+    else if size[0] > 2 {
+        let cols = size[1];
+        let mut det: f32 = 0.0;
+        for i in 0..cols {
+            let matrix_minor = get_matrix_minor(&matrix, &size, &i);
+            let minor_size: Vec<usize> = vec![cols-1, cols-1, (cols-1)*(cols-1)];
+            let tmp = matrix_determinant(&matrix_minor, &minor_size);
+
+            let temp: f32 = tmp[0] * matrix[i as usize];
+            if (i % 2) == 0 { //at even-numbered column
+                det += temp;
+            }
+            else { //at odd-numbered column
+                det -= temp;
+            }
+        }
+        res.push(det);
+        res
+    }
+    else { //????
+        panic!("this should be unreachable, so ????");
+    }
 }
 
 
