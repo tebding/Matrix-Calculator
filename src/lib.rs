@@ -33,7 +33,7 @@ pub fn parse_op(expr: &str) -> Result<Operations, String> {
         "transpose" | "trans" => Ok(Operations::Transpose),
         "inverse" | "inv" => Ok(Operations::Inverse),
         "adjugate" | "adj" => Ok(Operations::Adjugate),
-        "exit" => Ok(Operations::Exit); //instead of an operation, exits the main loop
+        "exit" => Ok(Operations::Exit), //instead of an operation, exits the main loop
         _ => Err(format!("Cannot parse operation")),
     }
 }
@@ -131,7 +131,7 @@ pub fn set_matrix_size() -> Vec<usize> {
     }
 }
 
-
+//takes user-inputted value to be applied as a scalar
 pub fn setup_scalar() -> f32 {  
     let mut scalar_str = String::new();
     //get the scalar value
@@ -154,6 +154,25 @@ pub fn setup_scalar() -> f32 {
 }
 
 
+//calculates and returns the matrix minor for the given matrix and column
+fn get_matrix_minor(matrix: &Vec<f32>, size: &Vec<usize>, column: &usize) -> Vec<f32> {
+    let rows = size[0];
+    let cols = rows;
+    let mut res: Vec<f32> = Vec::new();
+    
+    //k is an offset to have first elements added be from the 2nd row
+    let mut k: usize = cols;
+    for _i in 1..rows {
+        for j in 0..cols {
+            if j != *column {
+                res.push(matrix[(j as usize)+k]);
+            }
+        }
+        k += rows;
+    }
+    res
+}
+
 //prints a matrix in 2D format (hardcoded)
 pub fn matrix_print(matrix: &Vec<f32>, size: &Vec<usize>) {
     let mut i: usize = 0;
@@ -167,6 +186,7 @@ pub fn matrix_print(matrix: &Vec<f32>, size: &Vec<usize>) {
         }
         println!("]"); //each line ends with a closing bracket
     }
+    println!("");
 }
 
 
