@@ -19,7 +19,6 @@ fn main() {
         io::stdin().read_line(&mut oper)
         .expect("failed to read line");
         
-        //the matrix to operate on. For scalar/binary ops, other vars assigned later
         let mut matrix: Vec<f32> = Vec::new();
         let mut result: Vec<f32> = Vec::new();
         let mut matrix_size: Vec<usize> = Vec::with_capacity(3);
@@ -114,9 +113,9 @@ fn main() {
                             _ => { //???
                                 panic!("this should be uncreachable???");
                             },
-                        }
-                    }
-                }
+                        } //end inner match op
+                    },
+                } //end outer match op
                 println!("Result:");
                 matrix_print(&result, &matrix_size);
             },
@@ -126,4 +125,3 @@ fn main() {
         } //end match parse_op()
     } //end loop
 } //end main
-

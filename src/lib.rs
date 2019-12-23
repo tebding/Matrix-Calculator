@@ -186,7 +186,7 @@ pub fn matrix_print(matrix: &Vec<f32>, size: &Vec<usize>) {
         }
         println!("]"); //each line ends with a closing bracket
     }
-    println!("");
+    println!(""); //adds extra blank line after matrix for better visual spacing
 }
 
 
@@ -215,14 +215,13 @@ pub fn matrix_multiply(matrix1: &Vec<f32>, size1: &Vec<usize>,
     let mut k = 0; //to track the index of the second matrix
     let mut temp: f32 = 0.0;
     
-    for i in 0..MATRIX_SIZE {
-        if (i%3 == 0) && (i != 0) { //when at a new row: 
+    for i in 0..size1[1] { //number of columns
+        if (i%[size1[1] == 0) && (i != 0) { //when at a new row: 
             j += 3; //our row-marker is increased
             k = 0; //our 2nd matrix tracker is reset
         }
-        //temp will have all 3 components added, then applied to res[i]
         
-        for _l in 0..3 { //loop for 3. hard-coded for sqrt(MATRIX_SIZE)
+        for _l in 0..size1[2] { //number of rows
         //row-starter + 2nd matrix column = which 1st matrix index to use
             temp += matrix1[j+(k%3)] * matrix2[k];
             k += 1;
