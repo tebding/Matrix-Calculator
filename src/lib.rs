@@ -15,6 +15,7 @@ pub enum Operations {
     Inverse,
     Adjugate,
     Exit,
+    Blank,
 }
 
 
@@ -34,6 +35,7 @@ pub fn parse_op(expr: &str) -> Result<Operations, String> {
         "inverse" | "inv" => Ok(Operations::Inverse),
         "adjugate" | "adj" => Ok(Operations::Adjugate),
         "exit" => Ok(Operations::Exit), //instead of an operation, exits the main loop
+        "" => Ok(Operations::Blank), //if the user presses 'enter' with blank input
         _ => Err(format!("Cannot parse operation")),
     }
 }

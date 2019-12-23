@@ -26,6 +26,7 @@ fn main() {
         match parse_op(&oper) {
             Ok(op) => {
                 match op {
+                    Operations::Blank => continue,
                     Operations::Exit => {
                     //note: this is before anything else to prevent wasting time with inputs
                         println!("exiting program.");
@@ -92,6 +93,9 @@ fn main() {
                                 
                                 result = matrix_multiply(&matrix, &mut matrix_size,
                                                                 &matrix2, &mut matrix2_size);
+                                matrix_size[1] = matrix2_size[0];
+                                matrix_size[2] = matrix_size[0] * matrix_size[1];
+                                //manually changing the dimensions of the matrix to pass to print
                             },
                             Operations::ScalarAdd => {
                                 let scalar = setup_scalar();
