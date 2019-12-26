@@ -313,22 +313,12 @@ pub fn matrix_transpose(matrix: &Vec<f32>, size: &mut Vec<usize>) -> Vec<f32> {
 }
 
 
-//calculates the Inverse of the given matrix
-pub fn matrix_inverse(matrix: &Vec<f32>, mut size: &mut Vec<usize>) -> Vec<f32> {
-    let det = matrix_determinant(&matrix, &size);
-    let inv_det = 1.0 / (det[0] as f32);
-    let mut adj = matrix_adjugate(&matrix, &mut size);
-    let res = matrix_scalar_multiply(&mut adj, inv_det);
-    res
-}
-
-
 //calculates the Adjugate of the given matrix
 pub fn matrix_adjugate(matrix: &Vec<f32>, mut size: &mut Vec<usize>) -> Vec<f32> {
     let rows = size[0];
     let cols = size[1];
     let mut res: Vec<f32> = Vec::with_capacity(size[2]);
-    let mut counter: u32 = 0;
+    let mut to_neg = false;
     
     for i in 0..rows {
         for j in 0..cols {
@@ -336,19 +326,29 @@ pub fn matrix_adjugate(matrix: &Vec<f32>, mut size: &mut Vec<usize>) -> Vec<f32>
             let minor = get_matrix_minor(&matrix, &size, row_col);
             let minor_size: Vec<usize> = vec![rows-1, cols-1, (rows-1)^2];
             let mut temp = matrix_determinant(&minor, &minor_size);
-            if counter%2 == 1{
+            if to_neg == true {
                 temp[0] *= -1.0;
             }
             res.push(temp[0]);
-            counter += 1;
+            to_neg = !to_neg;
         }
         //if there are an even number of elements per side, then we must
         //offset the check for cofactoring to properly checkerboard the matrix
         if rows%2 == 0 {
-            counter -= 1;
+            to_neg = !to_neg;
         }
     }
     res = matrix_transpose(&res, &mut size);
+    res
+}
+
+
+//calculates the Inverse of the given matrix
+pub fn matrix_inverse(matrix: &Vec<f32>, mut size: &mut Vec<usize>) -> Vec<f32> {
+    let det = matrix_determinant(&matrix, &size);
+    let inv_det = 1.0 / (det[0] as f32);
+    let mut adj = matrix_adjugate(&matrix, &mut size);
+    let res = matrix_scalar_multiply(&mut adj, inv_det);
     res
 }
 
