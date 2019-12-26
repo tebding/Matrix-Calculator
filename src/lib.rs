@@ -33,7 +33,7 @@ pub fn parse_op(expr: &str) -> Result<Operations, String> {
         "determinant" | "det" => Ok(Operations::Determinant),
         "transpose" | "trans" => Ok(Operations::Transpose),
         "inverse" | "inv" => Ok(Operations::Inverse),
-        "adjugate" | "adj" => Ok(Operations::Adjugate),
+        "adjugate" | "adjoint" | "adj" => Ok(Operations::Adjugate),
         "exit" => Ok(Operations::Exit), //instead of an operation, exits the main loop
         "" => Ok(Operations::Blank), //if the user presses 'enter' with blank input
         _ => Err(format!("Cannot parse operation")),
@@ -157,25 +157,29 @@ pub fn setup_scalar() -> f32 {
 
 
 //calculates and returns the matrix minor for the given matrix and column
-fn get_matrix_minor(matrix: &Vec<f32>, size: &Vec<usize>, column: &usize) -> Vec<f32> {
+fn get_matrix_minor(matrix: &Vec<f32>, size: &Vec<usize>, row_col: Vec<usize>) -> Vec<f32> {
     let rows = size[0];
     let cols = rows;
     let mut res: Vec<f32> = Vec::new();
     
-    //k is an offset to have first elements added be from the 2nd row
-    let mut k: usize = cols;
-    for _i in 1..rows {
-        for j in 0..cols {
-            if j != *column {
-                res.push(matrix[(j as usize)+k]);
+    let mut k: usize = 0;
+    for i in 0..rows {
+        if i != row_col[0] {
+            for j in 0..cols {
+                if j != row_col[1] {
+                    res.push(matrix[k]);
+                }
+                k += 1;
             }
         }
-        k += rows;
+        else {
+            k += cols; //increment k by the number of columns skipped
+        }
     }
     res
 }
 
-//prints a matrix in 2D format (hardcoded)
+//prints a matrix in 2D format
 pub fn matrix_print(matrix: &Vec<f32>, size: &Vec<usize>) {
     let mut i: usize = 0;
     let rows = size[0];
@@ -266,7 +270,8 @@ pub fn matrix_determinant(matrix: &Vec<f32>, size: &Vec<usize>) -> Vec<f32> {
         let cols = size[1];
         let mut det: f32 = 0.0;
         for i in 0..cols {
-            let matrix_minor = get_matrix_minor(&matrix, &size, &i);
+            let row_col: Vec<usize> = vec![0, i];
+            let matrix_minor = get_matrix_minor(&matrix, &size, row_col);
             let minor_size: Vec<usize> = vec![cols-1, cols-1, (cols-1)*(cols-1)];
             let tmp = matrix_determinant(&matrix_minor, &minor_size);
 
@@ -333,15 +338,11 @@ pub fn matrix_inverse(matrix: &Vec<f32>, mut size: &mut Vec<usize>) -> Vec<f32> 
 */
 pub fn matrix_adjugate(matrix: &Vec<f32>, mut size: &mut Vec<usize>) -> Vec<f32> {
     let mut res: Vec<f32> = Vec::with_capacity(size[2]);
+    /*
     //unfortunately hard-coded to the initial positions of
     //determinant component vars (for a 3x3 matrix)
-    let mut a = 4;
-    let mut b = 8;
-    let mut c = 7;
-    let mut d = 5;
     
-
-    for i in 0..MATRIX_SIZE {
+    for i in 0..size[2] {
         if i%2 == 1 { //if i is odd
             res.push(-1.0 * ((matrix[a]*matrix[b])-(matrix[c]*matrix[d])));
         }
@@ -358,16 +359,10 @@ pub fn matrix_adjugate(matrix: &Vec<f32>, mut size: &mut Vec<usize>) -> Vec<f32>
             0 | 3 | 6 => {
                 a -= 1;
                 c -= 1;
-                if i == 3 {
-                    //res.push(res.pop().expect("whoops") * -1.0)
-                }
             },
             1 | 4 | 7 => {
                 b -= 1;
                 d -= 1;
-                if i != 4 {
-                    //res.push(res.pop().expect("whoops") * -1.0);
-                }
             },
             2 => {
                 a -= 2;
@@ -380,12 +375,12 @@ pub fn matrix_adjugate(matrix: &Vec<f32>, mut size: &mut Vec<usize>) -> Vec<f32>
                 b -= 2;
                 c -= 2;
                 d += 1;
-                //res.push(res.pop().expect("whoops") * -1.0);
             },
             _ => (),
         };
     }
     res = matrix_transpose(&res, &mut size);
+    */
     res
 }
 

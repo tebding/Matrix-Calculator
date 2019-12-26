@@ -117,15 +117,15 @@ fn main() {
                             _ => { //???
                                 panic!("this should be uncreachable???");
                             },
-                        } //end inner match op
+                        } //end inner 'match op'
                     },
-                } //end outer match op
+                } //end outer 'match op'
                 println!("Result:");
                 matrix_print(&result, &matrix_size);
             },
             Err(err) => {
                 eprintln!("error: {}", err);
             },
-        } //end match parse_op()
-    } //end loop
+        } //end 'match parse_op()'
+    } //end 'loop'
 } //end main
