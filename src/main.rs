@@ -1,7 +1,4 @@
 //main.rs
-//matrix math calculator
-//takes an input matrix or matrices and operation to run on the matrix/matrices.
-//only works for 3x3 matrices!
 
 use matrix_calculator::{*};
 use std::io::{self, Write};
@@ -60,7 +57,7 @@ fn main() {
                             Operations::Adjugate => {
                                 result = matrix_adjugate(&matrix, &mut matrix_size);
                             },
-                            _ => eprintln!("this should be unreachable...?"),
+                            _ => panic!("this should be unreachable...?"),
                         }
                     },
                     _ => { //all the binary and other unary ops

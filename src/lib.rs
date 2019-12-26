@@ -57,7 +57,7 @@ fn parse_matrix(matrix: &str) -> Result<Vec<f32>, String> {
 
 
 //as parse_matrix, but for matrix size.
-//while a generic to cover both functions would be nicer, it's not worth implementing...
+//COULD make a function to take in generics, but would require lots of work to save no time at all
 fn parse_size(size: &str) -> Result<Vec<usize>, String> {
     size.split_whitespace().map(|num| {
         match num.parse::<usize>() {
@@ -111,7 +111,6 @@ pub fn fill_matrix(matrix: &mut Vec<f32>, size: &Vec<usize>) {
 //asks the user for input, then parses and sets matrix size from it
 pub fn set_matrix_size() -> Vec<usize> {
     loop { //to allow for re-tries in case of user error
-        // I/O
         print!("enter size\n> ");
         io::stdout().flush().unwrap();
         let mut size_str = String::new();
@@ -155,7 +154,7 @@ pub fn setup_scalar() -> f32 {
 }
 
 
-//calculates and returns the matrix minor for the given matrix and column
+//calculates and returns the matrix minor for the given matrix and row/column
 fn get_matrix_minor(matrix: &Vec<f32>, size: &Vec<usize>, row_col: Vec<usize>) -> Vec<f32> {
     let rows = size[0];
     let cols = rows;
@@ -214,7 +213,7 @@ pub fn matrix_multiply(matrix1: &Vec<f32>, size1: &Vec<usize>,
                        matrix2: &Vec<f32>, mut size2: &mut Vec<usize>) -> Vec<f32> {
     let mut res: Vec<f32> = Vec::new();
     
-    //by transposing the second matrix the abstraction requires fewer translations
+    //by transposing the second matrix, the abstraction requires fewer translations
     let matrix2 = matrix_transpose(&matrix2, &mut size2);
     let cols = size1[1];
     let rows1 = size1[0];
@@ -257,10 +256,10 @@ pub fn matrix_scalar_multiply(matrix: &mut Vec<f32>, scalar: f32) -> Vec<f32> {
 
 
 //calculates the Determinant of the given matrix
-    //the output will be a vector of length 1.
+  //the output will be a vector of length 1 (in order for print methodology to be consistent)
 pub fn matrix_determinant(matrix: &Vec<f32>, size: &Vec<usize>) -> Vec<f32> {
     let mut res: Vec<f32> = Vec::with_capacity(1);
-    if size[0] == 2 {
+    if size[0] == 2 { //at size 2, determinant is the following
         let det = (matrix[0] * matrix[3]) - (matrix[1] * matrix[2]);
         res.push(det);
         res
@@ -285,8 +284,8 @@ pub fn matrix_determinant(matrix: &Vec<f32>, size: &Vec<usize>) -> Vec<f32> {
         res.push(det);
         res
     }
-    else { //????
-        panic!("this should be unreachable, so ????");
+    else { //will address/clean if a relevant error is found
+        panic!("this should be unreachable, so ????"); 
     }
 }
 
