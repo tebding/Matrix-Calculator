@@ -32,16 +32,16 @@ fn main() {
                         println!("exiting program.");
                         break;
                     },
-                    Operations::Determinant => {
+                    Operations::Determinant | Operations::Adjugate=> {
                     //note: this is in separate logic in order to to check for valid size without
                     //wasting the user's time inputting values into the invalid matrix
                         loop {
                             matrix_size = set_matrix_size();
                             if matrix_size[2] == 1 { //matrix size is 1
-                                eprintln!("error: determinant undefined for matrices of size 1");
+                                eprintln!("error: undefined for matrices of size 1");
                             }
                             else if matrix_size[0] != matrix_size[1] { //non-square matrix
-                                eprintln!("error: determinant undefined for non-square matrices");
+                                eprintln!("error: undefined for non-square matrices");
                             }
                             else { //conditions met
                                 break; //OK
@@ -50,10 +50,18 @@ fn main() {
                         fill_matrix(&mut matrix, &matrix_size);
                         println!("the input matrix:");
                         matrix_print(&matrix, &matrix_size);
-                        result = matrix_determinant(&matrix, &matrix_size);
-                        matrix_size[0] = 1;
-                        matrix_size[1] = 1;
-                        matrix_size[2] = 1; //manually setting dimensions/len of result to 1
+                        match op {
+                            Operations::Determinant => {
+                                result = matrix_determinant(&matrix, &matrix_size);
+                                matrix_size[0] = 1;
+                                matrix_size[1] = 1;
+                                matrix_size[2] = 1; //manually setting dimensions/len of result to 1
+                            },
+                            Operations::Adjugate => {
+                                result = matrix_adjugate(&matrix, &mut matrix_size);
+                            },
+                            _ => eprintln!("this should be unreachable...?"),
+                        }
                     },
                     _ => { //all the binary and other unary ops
                         matrix_size = set_matrix_size();
@@ -109,10 +117,7 @@ fn main() {
                                 result = matrix_transpose(&matrix, &mut matrix_size);
                             },
                             Operations::Inverse => {
-                                //TODO result = matrix_inverse(&matrix, &mut matrix_size);
-                            },
-                            Operations::Adjugate => {
-                                //TODO result = matrix_adjugate(&matrix, &mut matrix_size);
+                                result = matrix_inverse(&matrix, &mut matrix_size);
                             },
                             _ => { //???
                                 panic!("this should be uncreachable???");

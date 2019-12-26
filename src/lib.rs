@@ -1,8 +1,7 @@
-//lib.rs 
+//lib.rs
 //contains library functions for matrix math calculator
 
 use std::io::{self, Write};
-const MATRIX_SIZE: u32 = 9;
 
 //to help use the operation type as a variable
 pub enum Operations {
@@ -134,7 +133,7 @@ pub fn set_matrix_size() -> Vec<usize> {
 }
 
 //takes user-inputted value to be applied as a scalar
-pub fn setup_scalar() -> f32 {  
+pub fn setup_scalar() -> f32 { 
     let mut scalar_str = String::new();
     //get the scalar value
     loop { //to allow re-tries in case of errors
@@ -145,7 +144,7 @@ pub fn setup_scalar() -> f32 {
             .expect("failed to read line");
         match scalar_str.trim().parse::<f32>() {
             Ok(val) => {
-                return val; 
+                return val;
             },
             Err(_) => {
                 eprintln!("invalid scalar value");
@@ -223,10 +222,10 @@ pub fn matrix_multiply(matrix1: &Vec<f32>, size1: &Vec<usize>,
     let mut temp: f32 = 0.0;
     
     for i in 0..rows1 { //iterate through each row of matrix1
-        let row1 = i * cols; 
+        let row1 = i * cols;
         for j in 0..rows2 { //iterate through each row of matrix2(transposed)
             let row2 = j * cols;
-            for this_col in 0..cols { 
+            for this_col in 0..cols {
                 temp += matrix1[row1+this_col] * matrix2[row2+this_col];
             }
             res.push(temp);
@@ -314,12 +313,7 @@ pub fn matrix_transpose(matrix: &Vec<f32>, size: &mut Vec<usize>) -> Vec<f32> {
 }
 
 
-/*
-   calculates the Inverse of the given matrix
-   1) calculates the inverse of the determinant
-   2) multiples it by the adjugate of the matrix
-      which yields the inversed matrix
-*/
+//calculates the Inverse of the given matrix
 pub fn matrix_inverse(matrix: &Vec<f32>, mut size: &mut Vec<usize>) -> Vec<f32> {
     let det = matrix_determinant(&matrix, &size);
     let inv_det = 1.0 / (det[0] as f32);
@@ -329,58 +323,32 @@ pub fn matrix_inverse(matrix: &Vec<f32>, mut size: &mut Vec<usize>) -> Vec<f32> 
 }
 
 
-/*
-   calculates the Adjugate of the given matrix
-   1) calculates the cofactor matrix by finding the
-      matrix minors for each index of the input matrix.
-   2) transposes he resultant cofactor matrix, which
-      yields the adjugate matrix that we proceed to return
-*/
+//calculates the Adjugate of the given matrix
 pub fn matrix_adjugate(matrix: &Vec<f32>, mut size: &mut Vec<usize>) -> Vec<f32> {
+    let rows = size[0];
+    let cols = size[1];
     let mut res: Vec<f32> = Vec::with_capacity(size[2]);
-    /*
-    //unfortunately hard-coded to the initial positions of
-    //determinant component vars (for a 3x3 matrix)
+    let mut counter: u32 = 0;
     
-    for i in 0..size[2] {
-        if i%2 == 1 { //if i is odd
-            res.push(-1.0 * ((matrix[a]*matrix[b])-(matrix[c]*matrix[d])));
+    for i in 0..rows {
+        for j in 0..cols {
+            let row_col: Vec<usize> = vec![i, j];
+            let minor = get_matrix_minor(&matrix, &size, row_col);
+            let minor_size: Vec<usize> = vec![rows-1, cols-1, (rows-1)^2];
+            let mut temp = matrix_determinant(&minor, &minor_size);
+            if counter%2 == 1{
+                temp[0] *= -1.0;
+            }
+            res.push(temp[0]);
+            counter += 1;
         }
-        else {
-            res.push((matrix[a]*matrix[b])-(matrix[c]*matrix[d]));
+        //if there are an even number of elements per side, then we must
+        //offset the check for cofactoring to properly checkerboard the matrix
+        if rows%2 == 0 {
+            counter -= 1;
         }
-    
-    /*
-       this 'match' section is based on the movement of the
-       determinant's component vars as the index of the matrix minor being
-       calculated moves through the Vec that represents the matrix
-    */
-        match i {
-            0 | 3 | 6 => {
-                a -= 1;
-                c -= 1;
-            },
-            1 | 4 | 7 => {
-                b -= 1;
-                d -= 1;
-            },
-            2 => {
-                a -= 2;
-                b += 1;
-                c += 1;
-                d -= 2;
-            },
-            5 => {
-                a += 1;
-                b -= 2;
-                c -= 2;
-                d += 1;
-            },
-            _ => (),
-        };
     }
     res = matrix_transpose(&res, &mut size);
-    */
     res
 }
 
