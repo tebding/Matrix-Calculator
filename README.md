@@ -9,3 +9,7 @@ Design decisions and appraoch are mentioned in comments throughout the code to e
 
 The overhaul to operate on matrices of any size was also a fun challenge, albeit less complex than originally estimated.
 Regardless, the `variable-size-matrices` branch has been merged to `master`.
+
+FUTURE WORK:
+I'm considering building a web app for this to run with, which could have an even more user-friendly UX.
+I'm also thinking about adding unit tests to practice utilizing the feature provided in Rust.
