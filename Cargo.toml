@@ -1,5 +1,5 @@
 [package]
-name = "matrix-calculator"
+name = "matrix_calculator"
 version = "0.1.0"
 authors = ["tebding <tyler.ebding@gmail.com>"]
 edition = "2018"
